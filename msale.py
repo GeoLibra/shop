@@ -194,8 +194,9 @@ class MSale(QMainWindow, ShopSale_UI):
                 cur=self.tabel_sell.item(row, 2).text()
                 price=Decimal(self.tabel_sell.item(row, 1).text())
                 result=QTableWidgetItem(str(Decimal(cur)*price))
-
+                self.tabel_sell.itemChanged.disconnect()
                 self.tabel_sell.setItem(row, 3, result)
+                self.tabel_sell.itemChanged.connect(self.handleItemClick)
                 self.updateCost()
         except Exception as e:
             print(e)
