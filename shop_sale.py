@@ -1,12 +1,6 @@
-import sys
-import pyodbc
-import time
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
-import PyQt5.QtCore
-from ToDB import ToDB
-from decimal import Decimal
 class ShopSale_UI(object):
     # def __init__(self):
     #     super(ShopSale_UI, self).__init__()
@@ -29,6 +23,7 @@ class ShopSale_UI(object):
 
         self.code_radio.setChecked(True)
 
+
         label_sum = QLabel("总计")
         label_sale = QLabel("应收")
         label_cost = QLabel("实收")
@@ -37,6 +32,8 @@ class ShopSale_UI(object):
         self.line_code = QLineEdit()
         # 设置输入框的大小
         self.line_code.setFixedSize(350, 30)
+        self.line_code.textChanged.connect(self.searchByCode)
+        self.line_code.setFocus()
         # self.line_txm.setValidator(QIntValidator())
         # self.line_name = QLineEdit()
         # self.line_name.setFixedSize(150, 30)

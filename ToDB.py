@@ -18,7 +18,7 @@ class ToDB():
     def runSql(self,sql):
         cur = self.cursor
         cur.execute("set names utf8mb4 ")
-        result=cur.execute(sql)
+        cur.execute(sql)
         self.db.commit()
     def searchCode(self, sql):
         cur = self.cursor

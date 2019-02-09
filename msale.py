@@ -40,9 +40,11 @@ class MSale(QMainWindow, ShopSale_UI):
             if self.line_code.text() == '':
                 replay = QMessageBox.warning(self, "!", "请输入条形码！", QMessageBox.Yes)
                 return
+            self.line_code.textChanged.connect(self.searchByCode)
             code = self.line_code.text()
             sql = "select 名称,零售价 from 库存 where 条形码='{0}'".format(code)
         else:
+            self.line_code.textChanged.disconnect()
             if self.line_code.text() == '':
                 replay = QMessageBox.warning(self, "!", "请输入药品名称！", QMessageBox.Yes)
                 return
@@ -68,6 +70,9 @@ class MSale(QMainWindow, ShopSale_UI):
                 one_sum = cur_count * Decimal(self.tabel_sell.item(row, 1).text())
                 self.tabel_sell.setItem(row, 3, QTableWidgetItem(str(one_sum)))
             else:
+
+                if self.Row==-1:
+                    self.Row=0
                 self.tabel_sell.setRowCount(self.Row + 1)
                 price = QTableWidgetItem(str(result['price']))
                 count = QTableWidgetItem('1')
@@ -125,8 +130,8 @@ class MSale(QMainWindow, ShopSale_UI):
     def jiesuan0(self):
         try:
             self.line_sell3.setText("")
-            self.Row=0
-            self.tabel_sell.clearContents()
+            # self.Row=0
+            # self.tabel_sell.clearContents()
         except Exception as e:
             print("www", e)
 
@@ -166,6 +171,11 @@ class MSale(QMainWindow, ShopSale_UI):
                 xsjl.write("\n" + time.strftime("%Y-%m-%d %H:%M:%S") + "\n")
                 xsjl.write("*******************************************************************\n")
                 xsjl.close()
+
+                # 入库
+                sql="insert into 收入(总计,实收,找零) values ('%s','%s','%s')" % (self.line_sell1.text(),self.line_sell3.text(),self.line_sell4.text())
+                self.db.runSql(sql)
+
                 self.event_ql()
 
             except Exception as e:
@@ -182,6 +192,9 @@ class MSale(QMainWindow, ShopSale_UI):
         self.line_code.clear()
         self.tabel_sell.clear()
 
+        self.tabel_sell.setRowCount(1)
+        self.tabel_sell.setColumnCount(4)
+        self.tabel_sell.setHorizontalHeaderLabels(["名称", "零售价", "数量", "总计"])
         # 添加背景图片
 
     def handleItemClick(self):
@@ -200,8 +213,6 @@ class MSale(QMainWindow, ShopSale_UI):
                 self.updateCost()
         except Exception as e:
             print(e)
-
-
 
     def contextMenuEvent(self, event):
         pmenu = QMenu(self)
@@ -239,4 +250,12 @@ class MSale(QMainWindow, ShopSale_UI):
         else:
             for i in range(rows-1, -1, -1):
                 self.tabel_sell.removeRow(i)
+    def searchByCode(self):
+        code=self.line_code.text()
+        if self.code_radio.isChecked():
+            if len(code)==14:
+                self.event_lr()
+                self.line_code.clear()
+            if len(code)>14:
+                self.line_code.clear()
 
