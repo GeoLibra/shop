@@ -84,7 +84,7 @@ class ShopSale_UI(object):
         self.tabel_sell.setObjectName("tableWidget")
         self.tabel_sell.setRowCount(1)
         self.tabel_sell.setColumnCount(4)
-        self.tabel_sell.setHorizontalHeaderLabels(["药品名称", "单价", "数量", "总计"])
+        self.tabel_sell.setHorizontalHeaderLabels(["名称", "零售价", "数量", "总计"])
 
         self.tabel_sell.setColumnWidth(4, 200)
         # 不可编辑

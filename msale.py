@@ -41,13 +41,13 @@ class MSale(QMainWindow, ShopSale_UI):
                 replay = QMessageBox.warning(self, "!", "请输入条形码！", QMessageBox.Yes)
                 return
             code = self.line_code.text()
-            sql = "select 名称,售价 from 库存 where 条码='{0}'".format(code)
+            sql = "select 名称,零售价 from 库存 where 条形码='{0}'".format(code)
         else:
             if self.line_code.text() == '':
                 replay = QMessageBox.warning(self, "!", "请输入药品名称！", QMessageBox.Yes)
                 return
             name = self.line_code.text()
-            sql = "select 名称,售价 from 库存 where 名称 like '{0}'".format(name)
+            sql = "select 名称,零售价 from 库存 where 名称 like '{0}'".format(name)
         result = self.db.search(sql)
         if not result:
             replay = QMessageBox.warning(self, "!", "未找到！", QMessageBox.Yes)

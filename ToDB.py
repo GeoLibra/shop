@@ -20,6 +20,24 @@ class ToDB():
         cur.execute("set names utf8mb4 ")
         result=cur.execute(sql)
         self.db.commit()
+    def searchCode(self, sql):
+        cur = self.cursor
+         # 这一条语句是告诉数据库编码方式为 utf8
+        cur.execute("set names utf8mb4 ")
+        cur.execute(sql)
+        results = cur.fetchone()
+
+        if not results:
+            return None
+        return results
+    def insertMany(self,sql,data):
+        cursor = self.cursor
+        try:
+            cursor.executemany(sql, data)
+        except Exception as e:
+            print(e)
+            self.db.rollback()
+        self.db.commit()
 
 
 if __name__=="__main__":
