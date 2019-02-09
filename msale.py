@@ -2,6 +2,7 @@ from PyQt5.QtCore import pyqtSlot, QSize, Qt
 from PyQt5.QtWidgets import QMainWindow, QTableWidgetItem, QComboBox, QMessageBox, QMenu, QAction, QHeaderView, QAbstractItemView
 import time
 from decimal import Decimal
+from string import Template
 from shop_sale import ShopSale_UI
 from ToDB import ToDB
 class MSale(QMainWindow, ShopSale_UI):
@@ -143,11 +144,18 @@ class MSale(QMainWindow, ShopSale_UI):
         else:
             # 录入数据库的同时将收货信息存入txt文件中，模仿打印小票
             try:
-                xsjl = open("销售记录.txt", "a+")
-                xsjl.write("*******************************************************************\n")
-                xsjl.write("商品名称\t\t\t\t单价\t\t\t\t数量\t\t\t\t总计\n")
-                xsjl.write("\n")
 
+                width = 35
+                price_width = 15
+                item_width = width - price_width
+                header_format = '%-*s%*s%*s%*s'
+                content_format = '%-*s%*s%*s%*s'
+
+                xsjl = open("销售记录.txt", "a+")
+                xsjl.write("="*(price_width*4+item_width)+'\n')
+                xsjl.write(content_format%(item_width,"名称",price_width,"单价",price_width,"数量",price_width,"总计"))
+                xsjl.write("\n")
+                xsjl.write("-" * (price_width*4+item_width)+ '\n')
                 goods = []
                 rows = self.tabel_sell.rowCount()
                 for rows_index in range(rows):
@@ -155,7 +163,8 @@ class MSale(QMainWindow, ShopSale_UI):
                     price = self.tabel_sell.item(rows_index, 1).text()
                     count = self.tabel_sell.item(rows_index, 2).text()
                     sum_price = self.tabel_sell.item(rows_index, 3).text()
-                    record = name + '\t\t\t\t' + price +'\t\t\t\t'+ count +'\t\t\t\t'+ sum_price + '\n'
+                    record = content_format % (item_width, name, price_width, price, price_width, count, price_width, sum_price)
+
                     goods.append(record)
                     sql='''
                     INSERT INTO 销售 (名称,数量)\
@@ -163,13 +172,14 @@ class MSale(QMainWindow, ShopSale_UI):
                        ('%s','%s')
                     ''' % (name,count)
                     self.db.runSql(sql)
-                xsjl.write(''.join(goods))
-                xsjl.write("___________________________________________________________________\n")
-                xsjl.write("总计：%.1f\n" % float(self.line_sell1.text()))
-                xsjl.write("实收：%.1f\n" % float(self.line_sell3.text()))
-                xsjl.write("找零：%.1f\n" % float(self.line_sell4.text()))
+
+                xsjl.write('\n'.join(goods))
+                xsjl.write('\n'+"-" * (price_width*4+item_width) + '\n')
+                xsjl.write("总计：%.2f 元\n" % float(self.line_sell1.text()))
+                xsjl.write("实收：%.2f 元\n" % float(self.line_sell3.text()))
+                xsjl.write("找零：%.2f 元\n" % float(self.line_sell4.text()))
                 xsjl.write("\n" + time.strftime("%Y-%m-%d %H:%M:%S") + "\n")
-                xsjl.write("*******************************************************************\n")
+                xsjl.write("=" * (price_width*4+item_width) + '\n')
                 xsjl.close()
 
                 # 入库
