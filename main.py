@@ -4,6 +4,7 @@ from PyQt5.QtGui import *
 from PyQt5.QtCore import *
 from shop_stock import *
 from msale import *
+from shop_search import *
 class Shopmain(QWidget):
     def __init__(self, parent=None):
         super(Shopmain, self).__init__(parent)
@@ -26,6 +27,11 @@ class Shopmain(QWidget):
         btn_main_stock.setFixedSize(200, 45)
         btn_main_stock.clicked.connect(self.stock)
 
+        btn_main_search = QPushButton("查询")
+        btn_main_search.setStyleSheet("background-color :rgb(253,216,174)")
+        btn_main_search.setFixedSize(200, 45)
+        btn_main_search.clicked.connect(self.search)
+
         #title
         label_main_title = QLabel("药店信息管理系统")
         label_main_title.setFont(QFont("华文行楷", 25))
@@ -47,6 +53,7 @@ class Shopmain(QWidget):
         g1.addWidget(labe_null1)
         g2.addWidget(btn_main_sale, 1, 0)
         g2.addWidget(btn_main_stock, 2, 0)
+        g2.addWidget(btn_main_search, 3, 0)
         g3.addWidget(labe_null2)
         h2.addLayout(g1)
         h2.addLayout(g2)
@@ -57,14 +64,21 @@ class Shopmain(QWidget):
         layout.addLayout(h3)
     def explain(self):
         pass
-    #Stock实例化
+
     def stock(self):
         self.stock = Shopstock()
         self.stock.show()
-    #Sell实例化
+
     def sale(self):
         self.sell = MSale()
         self.sell.show()
+
+    def search(self):
+        try:
+            self.search = MSearch()
+            self.search.show()
+        except Exception as e:
+            print(e)
     #设置背景图片
     def paintEvent(self, event):
         painter = QPainter(self)

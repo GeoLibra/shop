@@ -97,10 +97,11 @@ class ShopSale_UI(object):
         v1 = QVBoxLayout()
         h1 = QHBoxLayout()
         h2 = QHBoxLayout()
-        h2 = QHBoxLayout()
         h3 = QHBoxLayout()
+        # 控制台
         v2 = QVBoxLayout()
-        h5 = QHBoxLayout()
+        h4 = QHBoxLayout()
+
         f = QFormLayout()
         w_title = QWidget()
         w_21 = QWidget()
@@ -109,15 +110,27 @@ class ShopSale_UI(object):
         w_321 = QWidget()
         w_321.setFixedSize(235, 330)
         w_322 = QWidget()
-        w_low = QWidget()
+
+        w_console = QWidget()
+
+
         v1.addWidget(label_sell_title, 0, Qt.AlignCenter)
-        h1.addWidget(self.code_radio)
-        h1.addWidget(self.name_radio)
-        h1.addWidget(self.line_code)
+        h1.addWidget(self.code_radio, 0, Qt.AlignLeft)
+        h1.addWidget(self.name_radio, 0, Qt.AlignLeft)
+        h1.addWidget(self.line_code, 0, Qt.AlignLeft)
+
         # h1.addWidget(label_name)
         # h1.addWidget(self.line_name)
         h2.addWidget(btn_sell_lr)
+
         h3.addWidget(self.tabel_sell)
+        self.textEdit =QTextEdit()
+        self.textEdit.setGeometry(QRect(0, 0, 200, 200))
+        self.textEdit.setObjectName("textEdit")
+        self.textEdit.setReadOnly(True)
+        # self.textEdit.setText("sadddddddddddddddddddddddddddddd")
+        h4.addWidget(self.textEdit, 0, Qt.AlignBottom)
+
         f.addRow(label_sum, self.line_sell1)
         f.addRow(label_sale, self.line_sell2)
         f.addRow(label_cost, self.line_sell3)
@@ -130,10 +143,13 @@ class ShopSale_UI(object):
         w_31.setLayout(h3)
         w_321.setLayout(f)
         w_322.setLayout(v2)
-        w_low.setLayout(h5)
+
+        w_console.setLayout(h4)
+
         splitter_sell1 = QSplitter(Qt.Horizontal)
-        splitter_sell1.setSizes([800, 80])
+        splitter_sell1.setSizes([800, 60])
         splitter_sell1.addWidget(w_title)
+
         splitter_sell2 = QSplitter(Qt.Horizontal)
         splitter_sell2.setSizes([150, 60])
         splitter_sell2.addWidget(w_22)
@@ -157,10 +173,17 @@ class ShopSale_UI(object):
         splitter_sell8 = QSplitter(Qt.Horizontal)
         splitter_sell8.addWidget(splitter_sell7)
         splitter_sell8.addWidget(splitter_sell6)
+
+
+        # splitter_sell10 = QSplitter(Qt.Horizontal)
+        # splitter_sell10.addWidget(w_console)
+
         splitter_sell9 = QSplitter(Qt.Vertical)
         splitter_sell9.addWidget(splitter_sell4)
         splitter_sell9.addWidget(splitter_sell8)
+        # splitter_sell9.addWidget(splitter_sell10)
         # splitter_sell9.addWidget(w_low)
+
         layout.addWidget(splitter_sell9)
         self.setLayout(layout)
         # 临时变量
