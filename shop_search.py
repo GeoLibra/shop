@@ -3,10 +3,14 @@ import pyodbc
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
+from ToDB import ToDB
+import datetime
+import time
 class MSearch(QWidget):
     def __init__(self):
         super(MSearch, self).__init__()
         self.initUI()
+        self.db = ToDB()
     #UI窗口设计
     def initUI(self):
         self.resize(1366, 768)
@@ -98,8 +102,8 @@ class MSearch(QWidget):
         tab2_12 = QWidget()
         self.tab2_2 = QTableWidget()
         self.tab2_2.setRowCount(500)
-        self.tab2_2.setColumnCount(4)
-        self.tab2_2.setHorizontalHeaderLabels(["条形码", "名称","零售价", "库存量"])
+        self.tab2_2.setColumnCount(5)
+        self.tab2_2.setHorizontalHeaderLabels(["条形码", "名称","进货时间","零售价", "库存量"])
 
         self.tab2_2.setEditTriggers(QAbstractItemView.NoEditTriggers)
         h1 = QHBoxLayout()
@@ -128,7 +132,7 @@ class MSearch(QWidget):
     def tab3UI(self):
         self.tabel_main.setTabText(2, "售货查询")
         self.tab3.cb = QComboBox()
-        self.tab3.cb.addItems(["商品名称", "条形码"])
+        self.tab3.cb.addItems(["名称", "条形码"])
         self.tab3.cb.activated.connect(self.event_cb3)
         self.tab3.label = QLabel("销售时间")
         self.tab3.labelnull = QLabel("——")
@@ -146,8 +150,8 @@ class MSearch(QWidget):
         tab3_12 = QWidget()
         self.tab3_2 = QTableWidget()
         self.tab3_2.setRowCount(500)
-        self.tab3_2.setColumnCount(5)
-        self.tab3_2.setHorizontalHeaderLabels(["条形码", "名称", "零售价", "销售数量", "售出时间"])
+        self.tab3_2.setColumnCount(4)
+        self.tab3_2.setHorizontalHeaderLabels(["条形码", "名称", "销售数量", "售出时间"])
 
         self.tab3_2.setEditTriggers(QAbstractItemView.NoEditTriggers)
         h1 = QHBoxLayout()
@@ -184,60 +188,211 @@ class MSearch(QWidget):
     #库存查询
     def event_select1(self):
         #每次查询前都应该先清除表中内容
-
+        for i in range(25):
+            for j in range(6):
+                tab1_newItem0 = QTableWidgetItem("")
+                self.tab1_2.setItem(i, j, tab1_newItem0)
         #获取输入框中的内容
         text = self.tab1.lineEdit.text()
         if self.tab1.cb.currentText() == "条形码":
             if text == "":
-                pass
+                replay = QMessageBox.warning(self, "!", "请输入条形码！", QMessageBox.Yes)
             else:
-                pass
+                sql1 = 'select 条形码,名称,零售价,sum(数量) from 库存 where 条形码="%s"' % text
+                result1 = self.db.searchall(sql1)
+
+
+                if not result1[0][0]:
+                    replay = QMessageBox.warning(self, "!", "未找到该药品", QMessageBox.Yes)
+                    return
+                sql2 = 'select sum(数量) from 销售 where 条形码="%s"' % text
+                result2 = self.db.searchall(sql2)
+
+                code=result1[0][0]
+                name=result1[0][1]
+                price=result1[0][2]
+                if result2[0][0]:
+                    remain_count=result1[0][3]-result2[0][0]
+                else:
+                    remain_count=result1[0][3]
+
+                self.tab1_2.setItem(0, 0, QTableWidgetItem(code))
+                self.tab1_2.setItem(0, 1, QTableWidgetItem(name))
+                self.tab1_2.setItem(0, 2, QTableWidgetItem(str(price)))
+                self.tab1_2.setItem(0, 3, QTableWidgetItem(str(remain_count)))
         else:
             if text == "":
-                pass
+                replay = QMessageBox.warning(self, "!", "请输入药品名称！", QMessageBox.Yes)
             else:
-                pass
+                sql1 = 'select 条形码,名称,零售价,sum(数量) from 库存 where 名称="%s"' % text
+                result1 = self.db.searchall(sql1)
+
+                if not result1[0][0]:
+                    replay = QMessageBox.warning(self, "!", "未找到该药品", QMessageBox.Yes)
+                    return
+                sql2 = 'select sum(数量) from 销售 where 名称="%s"' % text
+                result2 = self.db.searchall(sql2)
+
+                code = result1[0][0]
+                name = result1[0][1]
+                price = result1[0][2]
+                if result2[0][0]:
+                    remain_count = result1[0][3] - result2[0][0]
+                else:
+                    remain_count = result1[0][3]
+
+                self.tab1_2.setItem(0, 0, QTableWidgetItem(code))
+                self.tab1_2.setItem(0, 1, QTableWidgetItem(name))
+                self.tab1_2.setItem(0, 2, QTableWidgetItem(str(price)))
+                self.tab1_2.setItem(0, 3, QTableWidgetItem(str(remain_count)))
         #进货查询
     def event_select2(self):
         #清空显示table
-
+        for i in range(self.tab2_2.rowCount()):
+            for j in range(5):
+                tab2_newItem0 = QTableWidgetItem("")
+                self.tab2_2.setItem(i, j, tab2_newItem0)
         #获取输入框内容
         text = self.tab2.lineEdit.text()
         #获取两个时间，组成时间段
-        time1 = self.tab2.dateEdit1.dateTime().toString("yyyy-MM-dd")
-        time2 = self.tab2.dateEdit2.dateTime().toString("yyyy-MM-dd")
+        time1 = self.tab2.dateEdit1.dateTime().toString("yyyy-MM-dd hh:mm:ss")
+        time2 = self.tab2.dateEdit2.dateTime().toString("yyyy-MM-dd hh:mm:ss")
+        if text == "":
+            sql = 'select 条形码,名称,时间,零售价,数量 from 库存 WHERE 时间>="%s" AND 时间<="%s"' % (time1, time2)
+            try:
+                results = self.db.searchall(sql)
+            except Exception as e:
+                print(e)
+
+            self.tab2_2.setRowCount(len(results))
+            for i in range(len(results)):
+                tab3_newItem1 = QTableWidgetItem(results[i][0])
+                tab3_newItem2 = QTableWidgetItem(results[i][1])
+
+                timeTuple = results[i][2].strftime("%Y-%m-%d")
+
+                tab3_newItem3 = QTableWidgetItem(timeTuple)
+
+                tab3_newItem4 = QTableWidgetItem(str(results[i][3]))
+                tab3_newItem5 = QTableWidgetItem(str(results[i][4]))
+                self.tab2_2.setItem(i, 0, tab3_newItem1)
+                self.tab2_2.setItem(i, 1, tab3_newItem2)
+                self.tab2_2.setItem(i, 2, tab3_newItem3)
+                self.tab2_2.setItem(i, 3, tab3_newItem4)
+                self.tab2_2.setItem(i, 4, tab3_newItem5)
+            return
+
         if self.tab2.cb.currentText() == "条形码":
-            if text == "":
-                pass
-            else:
-                pass
+            sql = 'select 条形码,名称,时间,零售价,数量 from 库存 WHERE 时间>="%s" AND 时间<="%s" AND 条形码="%s"' % (time1, time2,text)
+
+            results = self.db.searchall(sql)
+
+            self.tab2_2.setRowCount(len(results))
+            try:
+                for i in range(len(results)):
+                    tab3_newItem1 = QTableWidgetItem(results[i][0])
+                    tab3_newItem2 = QTableWidgetItem(results[i][1])
+
+                    timeTuple = results[i][2].strftime("%Y-%m-%d")
+
+                    tab3_newItem3 = QTableWidgetItem(timeTuple)
+
+                    tab3_newItem4 = QTableWidgetItem(str(results[i][3]))
+                    tab3_newItem5 = QTableWidgetItem(str(results[i][4]))
+                    self.tab2_2.setItem(i, 0, tab3_newItem1)
+                    self.tab2_2.setItem(i, 1, tab3_newItem2)
+                    self.tab2_2.setItem(i, 2, tab3_newItem3)
+                    self.tab2_2.setItem(i, 3, tab3_newItem4)
+                    self.tab2_2.setItem(i, 4, tab3_newItem5)
+            except Exception as e:
+                print(e)
         else:
-            if text == "":
-                #如果输入框中并未填写任何内容，应该将数据库表中时间段内所有数据全部显示出来
-                pass
-            else:
-                pass
+            sql = 'select 条形码,名称,时间,零售价,数量 from 库存 WHERE 时间>="%s" AND 时间<="%s" AND 名称 LIKE "%s"' % (time1, time2, text)
+            results = self.db.searchall(sql)
+
+            self.tab2_2.setRowCount(len(results))
+            for i in range(len(results)):
+                tab3_newItem1 = QTableWidgetItem(results[i][0])
+                tab3_newItem2 = QTableWidgetItem(results[i][1])
+
+                timeTuple = results[i][2].strftime("%Y-%m-%d")
+
+                tab3_newItem3 = QTableWidgetItem(timeTuple)
+
+                tab3_newItem4 = QTableWidgetItem(str(results[i][3]))
+                tab3_newItem5 = QTableWidgetItem(str(results[i][4]))
+                self.tab2_2.setItem(i, 0, tab3_newItem1)
+                self.tab2_2.setItem(i, 1, tab3_newItem2)
+                self.tab2_2.setItem(i, 2, tab3_newItem3)
+                self.tab2_2.setItem(i, 3, tab3_newItem4)
+                self.tab2_2.setItem(i, 4, tab3_newItem5)
     #售货查询
     def event_select3(self):
         #清空
-
+        for i in range(500):
+            for j in range(6):
+                tab3_newItem0 = QTableWidgetItem("")
+                self.tab3_2.setItem(i, j, tab3_newItem0)
         #获取输入框内容及时间
         text = self.tab3.lineEdit.text()
         time1 = self.tab3.dateEdit1.dateTime().toString("yyyy-MM-dd hh:mm:ss")
         time2 = self.tab3.dateEdit2.dateTime().toString("yyyy-MM-dd hh:mm:ss")
+
+        if text=="":
+            sql = 'select 条形码,名称,时间,数量 from 销售 WHERE 时间>="%s" AND 时间<="%s"' % (time1, time2)
+
+            results = self.db.searchall(sql)
+
+            self.tab3_2.setRowCount(len(results))
+            for i in range(len(results)):
+                tab3_newItem1 = QTableWidgetItem(results[i][0])
+                tab3_newItem2 = QTableWidgetItem(results[i][1])
+                timeTuple = results[i][2].strftime("%Y-%m-%d")
+                tab3_newItem3 = QTableWidgetItem(timeTuple)
+
+                tab3_newItem4 = QTableWidgetItem(str(results[i][3]))
+                self.tab3_2.setItem(i, 0, tab3_newItem1)
+                self.tab3_2.setItem(i, 1, tab3_newItem2)
+                self.tab3_2.setItem(i, 3, tab3_newItem3)
+                self.tab3_2.setItem(i, 2, tab3_newItem4)
+            return
+
         if self.tab3.cb.currentText() == "条形码":
-            if text == "":
-                pass
-            else:
-                pass
+            sql = 'select 条形码,名称,时间,数量 from 销售 WHERE 时间>="%s" AND 时间<="%s" AND 条形码="%s"' % (time1, time2,text)
+
+            results = self.db.searchall(sql)
+
+            self.tab3_2.setRowCount(len(results))
+            for i in range(len(results)):
+                tab3_newItem1 = QTableWidgetItem(results[i][0])
+                tab3_newItem2 = QTableWidgetItem(results[i][1])
+                timeTuple = results[i][2].strftime("%Y-%m-%d")
+                tab3_newItem3 = QTableWidgetItem(timeTuple)
+
+                tab3_newItem4 = QTableWidgetItem(str(results[i][3]))
+                self.tab3_2.setItem(i, 0, tab3_newItem1)
+                self.tab3_2.setItem(i, 1, tab3_newItem2)
+                self.tab3_2.setItem(i, 3, tab3_newItem3)
+                self.tab3_2.setItem(i, 2, tab3_newItem4)
         else:
-            if text == "":
-                pass
-            else:
-                pass
+            sql = 'select 条形码,名称,时间,数量 from 销售 WHERE 时间>="%s" AND 时间<="%s" AND 名称 LIKE "%s"' % (time1, time2, text)
+            print(sql)
+            results = self.db.searchall(sql)
+
+            self.tab3_2.setRowCount(len(results))
+            for i in range(len(results)):
+                tab3_newItem1 = QTableWidgetItem(results[i][0])
+                tab3_newItem2 = QTableWidgetItem(results[i][1])
+                timeTuple = results[i][2].strftime("%Y-%m-%d")
+                tab3_newItem3 = QTableWidgetItem(timeTuple)
+
+                tab3_newItem4 = QTableWidgetItem(str(results[i][3]))
+                self.tab3_2.setItem(i, 0, tab3_newItem1)
+                self.tab3_2.setItem(i, 1, tab3_newItem2)
+                self.tab3_2.setItem(i, 3, tab3_newItem3)
+                self.tab3_2.setItem(i, 2, tab3_newItem4)
 if __name__ == "__main__":
     app = QApplication(sys.argv)
     sell = Shopselect()
     sell.show()
     sys.exit(app.exec())
-        

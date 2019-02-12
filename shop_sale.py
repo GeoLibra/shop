@@ -80,10 +80,10 @@ class ShopSale_UI(object):
         self.tabel_sell = QTableWidget()
         self.tabel_sell.setObjectName("tableWidget")
         self.tabel_sell.setRowCount(1)
-        self.tabel_sell.setColumnCount(4)
-        self.tabel_sell.setHorizontalHeaderLabels(["名称", "零售价", "数量", "总计"])
-
-        self.tabel_sell.setColumnWidth(4, 200)
+        self.tabel_sell.setColumnCount(5)
+        self.tabel_sell.setHorizontalHeaderLabels(["名称", "零售价", "数量", "总计","条形码"])
+        self.tabel_sell.setColumnHidden(4, True)
+        # self.tabel_sell.setColumnWidth(4, 200)
         # 不可编辑
         self.tabel_sell.setEditTriggers(QAbstractItemView.DoubleClicked)
         # 隔行改变颜色
@@ -128,7 +128,7 @@ class ShopSale_UI(object):
         self.textEdit.setGeometry(QRect(0, 0, 200, 200))
         self.textEdit.setObjectName("textEdit")
         self.textEdit.setReadOnly(True)
-        # self.textEdit.setText("sadddddddddddddddddddddddddddddd")
+
         h4.addWidget(self.textEdit, 0, Qt.AlignBottom)
 
         f.addRow(label_sum, self.line_sell1)

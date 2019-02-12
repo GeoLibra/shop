@@ -12,8 +12,9 @@ class ToDB():
         if not results:
             return None
         return {
-            'name':results[0],
-            'price':results[1]
+            'code':results[0],
+            'name':results[1],
+            'price':results[2]
         }
     def runSql(self,sql):
         cur = self.cursor
@@ -38,6 +39,11 @@ class ToDB():
             print(e)
             self.db.rollback()
         self.db.commit()
+    def searchall(self,sql):
+        cur = self.cursor
+        cur.execute(sql)
+        results = cur.fetchall()
+        return results
 
 
 if __name__=="__main__":

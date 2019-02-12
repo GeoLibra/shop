@@ -43,14 +43,14 @@ class MSale(QMainWindow, ShopSale_UI):
                 return
             self.line_code.textChanged.connect(self.searchByCode)
             code = self.line_code.text()
-            sql = "select 名称,零售价 from 库存 where 条形码='{0}'".format(code)
+            sql = "select 条形码,名称,零售价 from 库存 where 条形码='{0}'".format(code)
         else:
             self.line_code.textChanged.disconnect()
             if self.line_code.text() == '':
                 replay = QMessageBox.warning(self, "!", "请输入药品名称！", QMessageBox.Yes)
                 return
             name = self.line_code.text()
-            sql = "select 名称,零售价 from 库存 where 名称 like '{0}'".format(name)
+            sql = "select 条形码,名称,零售价 from 库存 where 名称 like '{0}'".format(name)
         result = self.db.search(sql)
         if not result:
             replay = QMessageBox.warning(self, "!", "未找到！", QMessageBox.Yes)
@@ -83,6 +83,7 @@ class MSale(QMainWindow, ShopSale_UI):
                 self.tabel_sell.setItem(self.Row, 0, name)
                 self.tabel_sell.setItem(self.Row, 1, price)
                 self.tabel_sell.setItem(self.Row, 3, sum_price)
+                self.tabel_sell.setItem(self.Row, 4, QTableWidgetItem(result['code']))
                 self.tabel_sell.setItem(self.Row, 2, count)
                 # qsb=QSpinBox()
                 #
@@ -144,7 +145,6 @@ class MSale(QMainWindow, ShopSale_UI):
         else:
             # 录入数据库的同时将收货信息存入txt文件中，模仿打印小票
             try:
-
                 width = 35
                 price_width = 15
                 item_width = width - price_width
@@ -167,10 +167,10 @@ class MSale(QMainWindow, ShopSale_UI):
 
                     goods.append(record)
                     sql='''
-                    INSERT INTO 销售 (名称,数量)\
+                    INSERT INTO 销售 (条形码,名称,数量)\
                        VALUES\
-                       ('%s','%s')
-                    ''' % (name,count)
+                       ('%s','%s','%s')
+                    ''' % (self.tabel_sell.item(rows_index, 4).text(),name,count,)
                     self.db.runSql(sql)
 
                 xsjl.write('\n'.join(goods))
