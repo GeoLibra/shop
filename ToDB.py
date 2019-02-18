@@ -1,7 +1,8 @@
-import MySQLdb
+import mysql.connector
 class ToDB():
     def __init__(self):
-        self.db = MySQLdb.connect('localhost', 'root', '12345', "jp", 3306, charset='utf8mb4')
+
+        self.db = mysql.connector.connect(host='localhost', user='root', passwd='12345', database="jp",buffered=True)
         self.cursor = self.db.cursor()
     def search(self, sql):
         cur = self.cursor

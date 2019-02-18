@@ -2,10 +2,7 @@ import sys
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
-import PyQt5.QtCore
 from decimal import Decimal
-import pandas as pd
-import numpy as np
 import xlrd
 from ToDB import ToDB
 class Shopstock(QWidget):
@@ -153,66 +150,48 @@ class Shopstock(QWidget):
         openfile_name = QFileDialog.getOpenFileName(self,'选择文件','','Excel files(*.xlsx , *.xls)')
         if openfile_name[0]=="":
             return
-        try:
-            input_table = pd.read_excel(openfile_name[0])
 
-            input_table_rows = input_table.shape[0]
-            input_table_colunms = input_table.shape[1]
+        input_table=xlrd.open_workbook(openfile_name[0]) # 打开一个excel
+        sheet=input_table.sheet_by_index(0) # 根据顺序获取sheet
 
-            input_table_header = input_table.columns.values.tolist()
-            self.tabel_sell.setRowCount(input_table_rows)
-            # self.tabel_sell.setColumnCount(input_table_colunms)
+        input_table_rows = sheet.nrows # 行
 
-            # self.tabel_sell.setHorizontalHeaderLabels(input_table_header)
+        input_table_colunms = sheet.ncols # 列
 
-            if "条形码" in input_table_header:
+        input_table_header = sheet.row_values(0)
+        self.tabel_sell.setRowCount(input_table_rows)
+        # self.tabel_sell.setColumnCount(input_table_colunms)
 
-                for i in range(input_table_rows):
-                    input_table_rows_values = input_table.iloc[[i]]
-                    # print(input_table_rows_values)
-                    input_table_rows_values_array = np.array(input_table_rows_values)
-                    input_table_rows_values_list = input_table_rows_values_array.tolist()[0]
-                    # print(input_table_rows_values_list)
-                    for j in range(input_table_colunms):
-                        input_table_items_list = input_table_rows_values_list[j]
-                        if j==0 and np.isnan(input_table_items_list):
-                            input_table_items_list=''
-                        if  np.isnan(input_table_rows_values_list[0]) and j==1:
+        # self.tabel_sell.setHorizontalHeaderLabels(input_table_header)
 
-                            results=self.db.searchCode('select 条形码 from 库存 where 名称="%s"' % input_table_items_list)
+        if "条形码" in input_table_header:
 
-                            if results:
-                                input_table_items = str(results)
-                                self.tabel_sell.setItem(i, 0, QTableWidgetItem(input_table_items))
+            for i in range(1,input_table_rows):
+                input_table_rows_values = sheet.row_values(i)
+                for j in range(input_table_colunms):
+                    rc_value=sheet.cell(i,j).value
 
-                        input_table_items = str(input_table_items_list)
-                        newItem = QTableWidgetItem(input_table_items)
-                        newItem.setTextAlignment(Qt.AlignHCenter | Qt.AlignVCenter)
-                        self.tabel_sell.setItem(i, j, newItem)
-            else:
-                for i in range(input_table_rows):
-                    input_table_rows_values = input_table.iloc[[i]]
-                    # print(input_table_rows_values)
-                    input_table_rows_values_array = np.array(input_table_rows_values)
-                    input_table_rows_values_list = input_table_rows_values_array.tolist()[0]
-                    # print(input_table_rows_values_list)
-                    for j in range(input_table_colunms):
-                        input_table_items_list = input_table_rows_values_list[j]
+                    input_table_items = str(rc_value)
+                    newItem = QTableWidgetItem(input_table_items)
+                    newItem.setTextAlignment(Qt.AlignHCenter | Qt.AlignVCenter)
+                    self.tabel_sell.setItem(i, j, newItem)
+        else:
+            for i in range(1,input_table_rows):
+                input_table_rows_values = sheet.row_values(i)
+                for j in range(input_table_colunms):
+                    rc_value=sheet.cell(i,j).value
+                    if j==0:
 
-                        if j==0:
+                        results = self.db.searchCode('select 条形码 from 库存 where 名称="%s"' % rc_value)
 
-                            results = self.db.searchCode('select 条形码 from 库存 where 名称="%s"' % input_table_items_list)
+                        if results:
+                            input_table_items = str(results[0])
+                            self.tabel_sell.setItem(i,0, QTableWidgetItem(input_table_items))
+                    input_table_items = str(rc_value)
+                    newItem = QTableWidgetItem(input_table_items)
+                    newItem.setTextAlignment(Qt.AlignHCenter | Qt.AlignVCenter)
+                    self.tabel_sell.setItem(i, j+1, newItem)
 
-                            if results:
-                                input_table_items = str(results[0])
-                                self.tabel_sell.setItem(i, j, QTableWidgetItem(input_table_items))
-                        input_table_items = str(input_table_items_list)
-                        newItem = QTableWidgetItem(input_table_items)
-                        newItem.setTextAlignment(Qt.AlignHCenter | Qt.AlignVCenter)
-                        self.tabel_sell.setItem(i, j+1, newItem)
-
-        except Exception as e:
-            print(e)
 
     def contextMenuEvent(self, event):
         try:
