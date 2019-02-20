@@ -102,6 +102,7 @@ class MSearch(QWidget):
         self.tab2_2 = QTableWidget()
         self.tab2_2.setRowCount(500)
         self.tab2_2.setColumnCount(5)
+        # ["条形码", "名称", "生产厂家", "批号", "有效期", "进价", "零售价", "数量"]
         self.tab2_2.setHorizontalHeaderLabels(["条形码", "名称","进货时间","零售价", "库存量"])
 
         self.tab2_2.setEditTriggers(QAbstractItemView.NoEditTriggers)
@@ -306,7 +307,7 @@ class MSearch(QWidget):
             except Exception as e:
                 print(e)
         else:
-            sql = 'select 条形码,名称,时间,零售价,数量 from 库存 WHERE 时间>="%s" AND 时间<="%s" AND 名称 LIKE "%s"' % (time1, time2, text)
+            sql = 'select 条形码,名称,时间,零售价,数量 from 库存 WHERE 时间>="%s" AND 时间<="%s" AND 名称 LIKE %"%s"%' % (time1, time2, text)
             results = self.db.searchall(sql)
 
             self.tab2_2.setRowCount(len(results))
@@ -374,7 +375,7 @@ class MSearch(QWidget):
                 self.tab3_2.setItem(i, 3, tab3_newItem3)
                 self.tab3_2.setItem(i, 2, tab3_newItem4)
         else:
-            sql = 'select 条形码,名称,时间,数量 from 销售 WHERE 时间>="%s" AND 时间<="%s" AND 名称 LIKE "%s"' % (time1, time2, text)
+            sql = 'select 条形码,名称,时间,数量 from 销售 WHERE 时间>="%s" AND 时间<="%s" AND 名称 LIKE %"%s"%' % (time1, time2, text)
             print(sql)
             results = self.db.searchall(sql)
 

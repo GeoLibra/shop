@@ -35,8 +35,8 @@ class Shopstock(QWidget):
 
         self.tabel_sell = QTableWidget()
         self.tabel_sell.setRowCount(1)
-        self.tabel_sell.setColumnCount(5)
-        self.tabel_sell.setHorizontalHeaderLabels(["条形码","名称", "进价", "零售价","数量"])
+        self.tabel_sell.setColumnCount(8)
+        self.tabel_sell.setHorizontalHeaderLabels(["条形码", "名称", "生产厂家", "批号", "有效期", "进价", "零售价", "数量"])
 
         self.tabel_sell.setColumnWidth(5, 200)
 
@@ -122,19 +122,24 @@ class Shopstock(QWidget):
                     code = self.tabel_sell.item(row,0).text()
 
                     name=self.tabel_sell.item(row,1).text()
+                    # 生产商
+                    producer=self.tabel_sell.item(row,2).text()
+                    batch=self.tabel_sell.item(row,3).text()
+                    validity=self.tabel_sell.item(row,4).text()
 
-                    price=self.tabel_sell.item(row,2).text()
-                    cost=self.tabel_sell.item(row,3).text()
-                    count=self.tabel_sell.item(row,4).text()
+                    price=self.tabel_sell.item(row,5).text()
+                    cost=self.tabel_sell.item(row,6).text()
+                    count=self.tabel_sell.item(row,7).text()
 
-                    data.append((code,name,price,cost,count))
+                    data.append((code,name,producer,batch,validity,price,cost,count))
                     delRows.append(row)
 
             self.removeRows(delRows, isdel_list=1)
 
         except Exception as e:
             print(e)
-        sql="INSERT INTO 库存(条形码,名称,进价,零售价,数量) VALUES(%s,%s,%s,%s,%s)"
+        # "条形码", "名称", "生产厂家", "批号", "有效期", "进价", "零售价", "数量"
+        sql="INSERT INTO 库存(条形码,名称,生产厂家,批号,有效期,进价,零售价,数量) VALUES(%s,%s,%s,%s,%s,%s,%s,%s)"
         self.db.insertMany(sql,data)
     def event_excel(self):
         if not self.isNullTab():
@@ -143,8 +148,8 @@ class Shopstock(QWidget):
                 # 重新初始化表格
                 self.tabel_sell.clear()
                 self.tabel_sell.setRowCount(1)
-                self.tabel_sell.setColumnCount(5)
-                self.tabel_sell.setHorizontalHeaderLabels(["条形码", "名称", "进价", "零售价", "数量"])
+                self.tabel_sell.setColumnCount(8)
+                self.tabel_sell.setHorizontalHeaderLabels(["条形码", "名称", "生产厂家","批号","有效期","进价", "零售价", "数量"])
             else:
                 return
         openfile_name = QFileDialog.getOpenFileName(self,'选择文件','','Excel files(*.xlsx , *.xls)')
@@ -262,9 +267,6 @@ class Shopstock(QWidget):
             try:
                 sql = 'select 名称,进价,零售价 from 库存 where 条形码="%s"' % code
                 result = self.db.searchCode(sql)
-
-
-
                 # 是否已经在表格中
                 items = self.tabel_sell.findItems(code, Qt.MatchExactly)
                 if len(items) != 0:

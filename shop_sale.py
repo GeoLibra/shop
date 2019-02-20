@@ -80,9 +80,9 @@ class ShopSale_UI(object):
         self.tabel_sell = QTableWidget()
         self.tabel_sell.setObjectName("tableWidget")
         self.tabel_sell.setRowCount(1)
-        self.tabel_sell.setColumnCount(5)
-        self.tabel_sell.setHorizontalHeaderLabels(["名称", "零售价", "数量", "总计","条形码"])
-        self.tabel_sell.setColumnHidden(4, True)
+        self.tabel_sell.setColumnCount(8)
+        self.tabel_sell.setHorizontalHeaderLabels(["条形码","名称","生产厂家","批号","有效期", "零售价", "数量", "总计"])
+        # self.tabel_sell.setColumnHidden(4, True)
         # self.tabel_sell.setColumnWidth(4, 200)
         # 不可编辑
         self.tabel_sell.setEditTriggers(QAbstractItemView.DoubleClicked)

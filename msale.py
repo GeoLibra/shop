@@ -43,66 +43,72 @@ class MSale(QMainWindow, ShopSale_UI):
                 return
             self.line_code.textChanged.connect(self.searchByCode)
             code = self.line_code.text()
-            sql = "select 条形码,名称,零售价 from 库存 where 条形码='{0}'".format(code)
+            # ["条形码", "名称", "生产厂家", "批号", "有效期", "零售价", "数量", "总计"]
+            sql = "select 条形码,名称,生产厂家,批号,有效期,MAX(零售价) as 零售价 from 库存 where 条形码='{0}'".format(code)
         else:
-            self.line_code.textChanged.disconnect()
+            try:
+                self.line_code.textChanged.disconnect()
+            except Exception as e:
+                print(e)
             if self.line_code.text() == '':
                 replay = QMessageBox.warning(self, "!", "请输入药品名称！", QMessageBox.Yes)
                 return
             name = self.line_code.text()
-            sql = "select 条形码,名称,零售价 from 库存 where 名称 like '{0}'".format(name)
+            sql = "select 条形码,名称,生产厂家,批号,有效期,零售价 from 库存 where 名称 like '%{0}%'".format(name)
+            # 情空表格
+
         result = self.db.search(sql)
         if not result:
             replay = QMessageBox.warning(self, "!", "未找到！", QMessageBox.Yes)
             return
         try:
-            if self.Row == 0:
-                self.tabel_sell.itemChanged.connect(self.handleItemClick)
 
-            name = QTableWidgetItem(result['name'])
+            if self.Row==-1:
+                self.Row=0
+            for cur in result:
 
-            items = self.tabel_sell.findItems(result['name'], Qt.MatchExactly)
+                if self.Row == 0:
+                    self.tabel_sell.itemChanged.connect(self.handleItemClick)
 
-            if len(items) != 0:
-                row = items[0].row()
-                cur_count = int(self.tabel_sell.item(row, 2).text())
-                cur_count += 1
-                self.tabel_sell.setItem(row, 2, QTableWidgetItem(str(cur_count)))
-                one_sum = cur_count * Decimal(self.tabel_sell.item(row, 1).text())
-                self.tabel_sell.setItem(row, 3, QTableWidgetItem(str(one_sum)))
-            else:
+                items = self.tabel_sell.findItems(cur[0], Qt.MatchExactly)
+                # 当前记录是否存在
+                if len(items) != 0:
+                    row = items[0].row()
+                    cur_count = int(self.tabel_sell.item(row, 6).text())
+                    cur_count += 1
+                    self.tabel_sell.setItem(row, 6, QTableWidgetItem(str(cur_count)))
+                    one_sum = cur_count * Decimal(self.tabel_sell.item(row, 5).text())
+                    self.tabel_sell.setItem(row, 7, QTableWidgetItem(str(one_sum)))
 
-                if self.Row==-1:
-                    self.Row=0
-                self.tabel_sell.setRowCount(self.Row + 1)
-                price = QTableWidgetItem(str(result['price']))
-                count = QTableWidgetItem('1')
+                else:
+                    self.tabel_sell.setRowCount(self.Row + 1)
+                    code = QTableWidgetItem(cur[0])
+                    name = QTableWidgetItem(cur[1])
+                    prducer = QTableWidgetItem(cur[2])
+                    batch = QTableWidgetItem(cur[3])
+                    valid = QTableWidgetItem(cur[4])
+                    cost = QTableWidgetItem(str(cur[5]))
+                    num = QTableWidgetItem('1')
+                    sum_price = QTableWidgetItem(str(cur[5] * 1))
 
-                sum_price = QTableWidgetItem(str(result['price'] * 1))
+                    self.tabel_sell.setItem(self.Row, 0, code)
+                    self.tabel_sell.setItem(self.Row, 1, name)
+                    self.tabel_sell.setItem(self.Row, 2, prducer)
+                    self.tabel_sell.setItem(self.Row, 3, batch)
+                    self.tabel_sell.setItem(self.Row, 4, valid)
+                    # 零售价
+                    self.tabel_sell.setItem(self.Row, 5, cost)
+                    # 数量
+                    self.tabel_sell.setItem(self.Row, 6, num)
+                    self.tabel_sell.setItem(self.Row, 7, sum_price)
+                    self.tabel_sell.item(self.Row, 0).setFlags(Qt.ItemIsEnabled)
+                    self.tabel_sell.item(self.Row, 1).setFlags(Qt.ItemIsEnabled)
+                    self.tabel_sell.item(self.Row, 2).setFlags(Qt.ItemIsEnabled)
+                    self.tabel_sell.item(self.Row, 3).setFlags(Qt.ItemIsEnabled)
+                    self.tabel_sell.item(self.Row, 4).setFlags(Qt.ItemIsEnabled)
+                    self.tabel_sell.item(self.Row, 5).setFlags(Qt.ItemIsEnabled)
 
-                self.tabel_sell.setItem(self.Row, 0, name)
-                self.tabel_sell.setItem(self.Row, 1, price)
-                self.tabel_sell.setItem(self.Row, 3, sum_price)
-                self.tabel_sell.setItem(self.Row, 4, QTableWidgetItem(result['code']))
-                self.tabel_sell.setItem(self.Row, 2, count)
-                # qsb=QSpinBox()
-                #
-                # qsb.setMinimum(0)
-                # qsb.setValue(1)
-
-                # h = QHBoxLayout()
-                # h.setAlignment(Qt.AlignCenter)
-                # h.addWidget(qsb)
-                # w = QWidget()
-                # w.setLayout(h)
-                # self.tabel_sell.item(self.Row, 2).setFlags(Qt.ItemIsEnabled)
-                # self.tabel_sell.setCellWidget(self.Row, 2, qsb)
-
-                self.tabel_sell.item(self.Row, 0).setFlags(Qt.ItemIsEnabled)
-                self.tabel_sell.item(self.Row, 1).setFlags(Qt.ItemIsEnabled)
-                self.tabel_sell.item(self.Row, 3).setFlags(Qt.ItemIsEnabled)
-
-                self.Row += 1
+                    self.Row += 1
             self.updateCost()
 
         except Exception as e:
@@ -112,7 +118,7 @@ class MSale(QMainWindow, ShopSale_UI):
         rows = self.tabel_sell.rowCount()
         for rows_index in range(rows):
             # print items[item_index].text()
-            num = self.tabel_sell.item(rows_index, 3)
+            num = self.tabel_sell.item(rows_index, 7)
             if num:
                 r_sum += Decimal(num.text())
         # 计算总价
@@ -160,9 +166,9 @@ class MSale(QMainWindow, ShopSale_UI):
                 rows = self.tabel_sell.rowCount()
                 for rows_index in range(rows):
                     name = self.tabel_sell.item(rows_index, 0).text()
-                    price = self.tabel_sell.item(rows_index, 1).text()
-                    count = self.tabel_sell.item(rows_index, 2).text()
-                    sum_price = self.tabel_sell.item(rows_index, 3).text()
+                    price = self.tabel_sell.item(rows_index, 5).text()
+                    count = self.tabel_sell.item(rows_index, 6).text()
+                    sum_price = self.tabel_sell.item(rows_index, 7).text()
                     record = content_format % (item_width, name, price_width, price, price_width, count, price_width, sum_price)
 
                     goods.append(record)
@@ -203,8 +209,8 @@ class MSale(QMainWindow, ShopSale_UI):
         self.tabel_sell.clear()
 
         self.tabel_sell.setRowCount(1)
-        self.tabel_sell.setColumnCount(4)
-        self.tabel_sell.setHorizontalHeaderLabels(["名称", "零售价", "数量", "总计"])
+        self.tabel_sell.setColumnCount(8)
+        self.tabel_sell.setHorizontalHeaderLabels(["条形码", "名称", "生产厂家", "批号", "有效期", "零售价", "数量", "总计"])
         # 添加背景图片
 
     def handleItemClick(self):
@@ -212,13 +218,13 @@ class MSale(QMainWindow, ShopSale_UI):
             column=self.tabel_sell.currentColumn()
             # print(self.tabel_sell.selectedItems().pop().column())
 
-            if column==2:
+            if column==6:
                 row = self.tabel_sell.currentRow()
-                cur=self.tabel_sell.item(row, 2).text()
-                price=Decimal(self.tabel_sell.item(row, 1).text())
+                cur=self.tabel_sell.item(row, 6).text()
+                price=Decimal(self.tabel_sell.item(row, 5).text())
                 result=QTableWidgetItem(str(Decimal(cur)*price))
                 self.tabel_sell.itemChanged.disconnect()
-                self.tabel_sell.setItem(row, 3, result)
+                self.tabel_sell.setItem(row, 7, result)
                 self.tabel_sell.itemChanged.connect(self.handleItemClick)
                 self.updateCost()
         except Exception as e:
@@ -235,7 +241,7 @@ class MSale(QMainWindow, ShopSale_UI):
         """
         删除行
         """
-        rr = QMessageBox.warning(self, "注意", "删除可不能恢复了哦！", QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
+        rr = QMessageBox.warning(self, "注意", "是否删除该行！", QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
         if rr == QMessageBox.Yes:
             curow = self.tabel_sell.currentRow()
             selections = self.tabel_sell.selectionModel()

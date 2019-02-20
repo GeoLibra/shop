@@ -9,14 +9,11 @@ class ToDB():
          # 这一条语句是告诉数据库编码方式为 utf8
         cur.execute("set names utf8mb4 ")
         cur.execute(sql)
-        results = cur.fetchone()
+        results = cur.fetchall()
         if not results:
             return None
-        return {
-            'code':results[0],
-            'name':results[1],
-            'price':results[2]
-        }
+        return results
+
     def runSql(self,sql):
         cur = self.cursor
         cur.execute("set names utf8mb4 ")
