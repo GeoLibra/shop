@@ -257,10 +257,15 @@ class MSearch(QWidget):
         #获取两个时间，组成时间段
         time1 = self.tab2.dateEdit1.dateTime().toString("yyyy-MM-dd hh:mm:ss")
         time2 = self.tab2.dateEdit2.dateTime().toString("yyyy-MM-dd hh:mm:ss")
+        time2 = time2.split(" ")[0] + " " + "23:59:59"
         if text == "":
-            sql = 'select 条形码,名称,时间,零售价,数量 from 库存 WHERE 时间>="%s" AND 时间<="%s"' % (time1, time2)
             try:
+                sql = 'select 条形码,名称,时间,零售价,数量 from 库存 WHERE 时间>="%s" AND 时间<="%s"' % (time1, time2)
+
                 results = self.db.searchall(sql)
+                if len(results) == 0:
+                    replay = QMessageBox.warning(self, "!", "未查找到!")
+                    return
             except Exception as e:
                 print(e)
 
@@ -286,7 +291,9 @@ class MSearch(QWidget):
             sql = 'select 条形码,名称,时间,零售价,数量 from 库存 WHERE 时间>="%s" AND 时间<="%s" AND 条形码="%s"' % (time1, time2,text)
 
             results = self.db.searchall(sql)
-
+            if len(results)==0:
+                replay = QMessageBox.warning(self, "!", "未查找到!")
+                return
             self.tab2_2.setRowCount(len(results))
             try:
                 for i in range(len(results)):
@@ -307,9 +314,13 @@ class MSearch(QWidget):
             except Exception as e:
                 print(e)
         else:
-            sql = 'select 条形码,名称,时间,零售价,数量 from 库存 WHERE 时间>="%s" AND 时间<="%s" AND 名称 LIKE %"%s"%' % (time1, time2, text)
-            results = self.db.searchall(sql)
 
+            sql = 'select 条形码,名称,时间,零售价,数量 from 库存 WHERE 时间>="%s" AND 时间<="%s" AND 名称 LIKE "%s"' % (time1, time2, "%"+text+"%")
+
+            results = self.db.searchall(sql)
+            if len(results)==0:
+                replay = QMessageBox.warning(self, "!", "未查找到!")
+                return
             self.tab2_2.setRowCount(len(results))
             for i in range(len(results)):
                 tab3_newItem1 = QTableWidgetItem(results[i][0])
@@ -337,12 +348,16 @@ class MSearch(QWidget):
         text = self.tab3.lineEdit.text()
         time1 = self.tab3.dateEdit1.dateTime().toString("yyyy-MM-dd hh:mm:ss")
         time2 = self.tab3.dateEdit2.dateTime().toString("yyyy-MM-dd hh:mm:ss")
+        time2=time2.split(" ")[0]+" "+"23:59:59"
 
         if text=="":
+
             sql = 'select 条形码,名称,时间,数量 from 销售 WHERE 时间>="%s" AND 时间<="%s"' % (time1, time2)
 
             results = self.db.searchall(sql)
-
+            if len(results)==0:
+                replay = QMessageBox.warning(self, "!", "未查找到!")
+                return
             self.tab3_2.setRowCount(len(results))
             for i in range(len(results)):
                 tab3_newItem1 = QTableWidgetItem(results[i][0])
@@ -361,7 +376,9 @@ class MSearch(QWidget):
             sql = 'select 条形码,名称,时间,数量 from 销售 WHERE 时间>="%s" AND 时间<="%s" AND 条形码="%s"' % (time1, time2,text)
 
             results = self.db.searchall(sql)
-
+            if len(results)==0:
+                replay = QMessageBox.warning(self, "!", "未查找到!")
+                return
             self.tab3_2.setRowCount(len(results))
             for i in range(len(results)):
                 tab3_newItem1 = QTableWidgetItem(results[i][0])
@@ -375,10 +392,13 @@ class MSearch(QWidget):
                 self.tab3_2.setItem(i, 3, tab3_newItem3)
                 self.tab3_2.setItem(i, 2, tab3_newItem4)
         else:
-            sql = 'select 条形码,名称,时间,数量 from 销售 WHERE 时间>="%s" AND 时间<="%s" AND 名称 LIKE %"%s"%' % (time1, time2, text)
-            print(sql)
-            results = self.db.searchall(sql)
 
+            sql = 'select 条形码,名称,时间,数量 from 销售 WHERE 时间>="%s" AND 时间<="%s" AND 名称 LIKE "%s"' % (time1, time2, "%"+text+"%")
+
+            results = self.db.searchall(sql)
+            if len(results)==0:
+                replay = QMessageBox.warning(self, "!", "未查找到!")
+                return
             self.tab3_2.setRowCount(len(results))
             for i in range(len(results)):
                 tab3_newItem1 = QTableWidgetItem(results[i][0])

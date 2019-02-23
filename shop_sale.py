@@ -32,7 +32,7 @@ class ShopSale_UI(object):
         self.line_code = QLineEdit()
         # 设置输入框的大小
         self.line_code.setFixedSize(350, 30)
-        self.line_code.textChanged.connect(self.searchByCode)
+        # self.line_code.textChanged.connect(self.searchByCode)
         self.line_code.setFocus()
         # self.line_txm.setValidator(QIntValidator())
         # self.line_name = QLineEdit()

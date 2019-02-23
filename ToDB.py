@@ -10,7 +10,9 @@ class ToDB():
         cur.execute("set names utf8mb4 ")
         cur.execute(sql)
         results = cur.fetchall()
-        if not results:
+        if len(results)==0:
+            return results
+        if not results[0][0]:
             return None
         return results
 
@@ -34,13 +36,30 @@ class ToDB():
         try:
             cursor.executemany(sql, data)
         except Exception as e:
-            print(e)
+            self.db.rollback()
+
+        self.db.commit()
+        if cursor.rowcount==-1:
+            raise Exception()
+        #     for i in data:
+        #         self.insertOne()
+        return cursor.rowcount
+    def insertOne(self,sql,data):
+        cursor = self.cursor
+        try:
+            cursor.execute(sql, data)
+        except Exception as e:
             self.db.rollback()
         self.db.commit()
+        return cursor.rowcount
     def searchall(self,sql):
         cur = self.cursor
         cur.execute(sql)
-        results = cur.fetchall()
+        try:
+            results = cur.fetchall()
+        except Exception as e:
+            print(e)
+
         return results
 
 

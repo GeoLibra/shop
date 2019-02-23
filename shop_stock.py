@@ -4,6 +4,7 @@ from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 from decimal import Decimal
 import xlrd
+import datetime
 from ToDB import ToDB
 class Shopstock(QWidget):
     def __init__(self):
@@ -34,7 +35,7 @@ class Shopstock(QWidget):
         btn_excel.clicked.connect(self.event_excel)
 
         self.tabel_sell = QTableWidget()
-        self.tabel_sell.setRowCount(1)
+        self.tabel_sell.setRowCount(20)
         self.tabel_sell.setColumnCount(8)
         self.tabel_sell.setHorizontalHeaderLabels(["条形码", "名称", "生产厂家", "批号", "有效期", "进价", "零售价", "数量"])
 
@@ -109,8 +110,9 @@ class Shopstock(QWidget):
     def event_lr(self):
         data=[]
         delRows=[]
-        try:
+        stime=datetime.datetime.now()
 
+        try:
             for row in range(0,self.tabel_sell.rowCount()):
                 flag = False  # 一行是否有空值
                 for j in range(0,self.tabel_sell.columnCount()):
@@ -131,23 +133,29 @@ class Shopstock(QWidget):
                     cost=self.tabel_sell.item(row,6).text()
                     count=self.tabel_sell.item(row,7).text()
 
-                    data.append((code,name,producer,batch,validity,price,cost,count))
+                    data.append((code,name,producer,batch,validity,price,cost,count,stime))
                     delRows.append(row)
 
-            self.removeRows(delRows, isdel_list=1)
+
 
         except Exception as e:
             print(e)
         # "条形码", "名称", "生产厂家", "批号", "有效期", "进价", "零售价", "数量"
-        sql="INSERT INTO 库存(条形码,名称,生产厂家,批号,有效期,进价,零售价,数量) VALUES(%s,%s,%s,%s,%s,%s,%s,%s)"
-        self.db.insertMany(sql,data)
+        sql="INSERT INTO 库存(条形码,名称,生产厂家,批号,有效期,进价,零售价,数量,时间) VALUES(%s,%s,%s,%s,%s,%s,%s,%s,%s)"
+        try:
+            end=self.db.insertMany(sql,data)
+            replay = QMessageBox.warning(self, "!", "成功录入%s条数据" % end)
+            self.removeRows(delRows, isdel_list=1)
+        except Exception as e:
+            replay = QMessageBox.warning(self, "!", "数据入库失败")
+
     def event_excel(self):
         if not self.isNullTab():
             replay = QMessageBox.question (self, "!", "当前还有数据为入库，是否继续？", QMessageBox.Yes | QMessageBox.No)
             if replay==QMessageBox.Yes:
                 # 重新初始化表格
                 self.tabel_sell.clear()
-                self.tabel_sell.setRowCount(1)
+                self.tabel_sell.setRowCount(20)
                 self.tabel_sell.setColumnCount(8)
                 self.tabel_sell.setHorizontalHeaderLabels(["条形码", "名称", "生产厂家","批号","有效期","进价", "零售价", "数量"])
             else:

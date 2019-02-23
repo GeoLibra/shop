@@ -5,6 +5,7 @@ from decimal import Decimal
 from string import Template
 from shop_sale import ShopSale_UI
 from ToDB import ToDB
+from datetime import datetime
 class MSale(QMainWindow, ShopSale_UI):
 
     def __init__(self, parent=None):
@@ -41,15 +42,15 @@ class MSale(QMainWindow, ShopSale_UI):
             if self.line_code.text() == '':
                 replay = QMessageBox.warning(self, "!", "请输入条形码！", QMessageBox.Yes)
                 return
-            self.line_code.textChanged.connect(self.searchByCode)
+            # self.line_code.textChanged.connect(self.searchByCode)
             code = self.line_code.text()
             # ["条形码", "名称", "生产厂家", "批号", "有效期", "零售价", "数量", "总计"]
             sql = "select 条形码,名称,生产厂家,批号,有效期,MAX(零售价) as 零售价 from 库存 where 条形码='{0}'".format(code)
         else:
-            try:
-                self.line_code.textChanged.disconnect()
-            except Exception as e:
-                print(e)
+            # try:
+            #     # self.line_code.textChanged.disconnect()
+            # except Exception as e:
+            #     print(e)
             if self.line_code.text() == '':
                 replay = QMessageBox.warning(self, "!", "请输入药品名称！", QMessageBox.Yes)
                 return
@@ -58,11 +59,13 @@ class MSale(QMainWindow, ShopSale_UI):
             # 情空表格
 
         result = self.db.search(sql)
+
         if not result:
             replay = QMessageBox.warning(self, "!", "未找到！", QMessageBox.Yes)
+
             return
         try:
-
+            self.line_code.clear()
             if self.Row==-1:
                 self.Row=0
             for cur in result:
@@ -151,6 +154,7 @@ class MSale(QMainWindow, ShopSale_UI):
         else:
             # 录入数据库的同时将收货信息存入txt文件中，模仿打印小票
             try:
+                stime=datetime.now()
                 width = 35
                 price_width = 15
                 item_width = width - price_width
@@ -165,7 +169,7 @@ class MSale(QMainWindow, ShopSale_UI):
                 goods = []
                 rows = self.tabel_sell.rowCount()
                 for rows_index in range(rows):
-                    name = self.tabel_sell.item(rows_index, 0).text()
+                    name = self.tabel_sell.item(rows_index, 1).text()
                     price = self.tabel_sell.item(rows_index, 5).text()
                     count = self.tabel_sell.item(rows_index, 6).text()
                     sum_price = self.tabel_sell.item(rows_index, 7).text()
@@ -173,10 +177,10 @@ class MSale(QMainWindow, ShopSale_UI):
 
                     goods.append(record)
                     sql='''
-                    INSERT INTO 销售 (条形码,名称,数量)\
+                    INSERT INTO 销售 (条形码,名称,数量,时间)\
                        VALUES\
-                       ('%s','%s','%s')
-                    ''' % (self.tabel_sell.item(rows_index, 4).text(),name,count,)
+                       ('%s','%s','%s','%s')
+                    ''' % (self.tabel_sell.item(rows_index, 0).text(),name,count,stime)
                     self.db.runSql(sql)
 
                 xsjl.write('\n'.join(goods))
@@ -184,15 +188,16 @@ class MSale(QMainWindow, ShopSale_UI):
                 xsjl.write("总计：%.2f 元\n" % float(self.line_sell1.text()))
                 xsjl.write("实收：%.2f 元\n" % float(self.line_sell3.text()))
                 xsjl.write("找零：%.2f 元\n" % float(self.line_sell4.text()))
-                xsjl.write("\n" + time.strftime("%Y-%m-%d %H:%M:%S") + "\n")
+                xsjl.write("\n" + stime.strftime("%Y-%m-%d %H:%M:%S") + "\n")
                 xsjl.write("=" * (price_width*4+item_width) + '\n')
                 xsjl.close()
 
                 # 入库
-                sql="insert into 收入(总计,实收,找零) values ('%s','%s','%s')" % (self.line_sell1.text(),self.line_sell3.text(),self.line_sell4.text())
+                sql="insert into 收入(总计,实收,找零,时间) values ('%s','%s','%s','%s')" % (self.line_sell1.text(),self.line_sell3.text(),self.line_sell4.text(),stime)
                 self.db.runSql(sql)
-
+                replay = QMessageBox.warning(self, "!", "销售成功,总计:%.2f 元" % float(self.line_sell1.text()))
                 self.event_ql()
+
 
             except Exception as e:
                 print(e)
@@ -268,10 +273,12 @@ class MSale(QMainWindow, ShopSale_UI):
                 self.tabel_sell.removeRow(i)
     def searchByCode(self):
         code=self.line_code.text()
-        if self.code_radio.isChecked():
-            if len(code)==14:
-                self.event_lr()
-                self.line_code.clear()
-            if len(code)>14:
-                self.line_code.clear()
+        time.sleep(2)
+        self.line_code.clear()
+        # if self.code_radio.isChecked():
+        #     if len(code)==14:
+        #         self.event_lr()
+        #         self.line_code.clear()
+        #     if len(code)>14:
+        #         self.line_code.clear()
 
