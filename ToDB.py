@@ -41,8 +41,6 @@ class ToDB():
         self.db.commit()
         if cursor.rowcount==-1:
             raise Exception()
-        #     for i in data:
-        #         self.insertOne()
         return cursor.rowcount
     def insertOne(self,sql,data):
         cursor = self.cursor

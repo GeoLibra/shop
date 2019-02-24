@@ -135,15 +135,16 @@ class Shopstock(QWidget):
 
                     data.append((code,name,producer,batch,validity,price,cost,count,stime))
                     delRows.append(row)
-
-
-
         except Exception as e:
             print(e)
         # "条形码", "名称", "生产厂家", "批号", "有效期", "进价", "零售价", "数量"
         sql="INSERT INTO 库存(条形码,名称,生产厂家,批号,有效期,进价,零售价,数量,时间) VALUES(%s,%s,%s,%s,%s,%s,%s,%s,%s)"
+        if len(data) == 0:
+            replay = QMessageBox.warning(self, "!", "请先录入数据")
+            return
         try:
             end=self.db.insertMany(sql,data)
+            print(end)
             replay = QMessageBox.warning(self, "!", "成功录入%s条数据" % end)
             self.removeRows(delRows, isdel_list=1)
         except Exception as e:

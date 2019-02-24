@@ -192,6 +192,7 @@ class MSearch(QWidget):
             for j in range(6):
                 tab1_newItem0 = QTableWidgetItem("")
                 self.tab1_2.setItem(i, j, tab1_newItem0)
+
         #获取输入框中的内容
         text = self.tab1.lineEdit.text()
         if self.tab1.cb.currentText() == "条形码":
@@ -204,6 +205,7 @@ class MSearch(QWidget):
 
                 if not result1[0][0]:
                     replay = QMessageBox.warning(self, "!", "未找到该药品", QMessageBox.Yes)
+                    self.tab1.lineEdit.clear()
                     return
                 sql2 = 'select sum(数量) from 销售 where 条形码="%s"' % text
                 result2 = self.db.searchall(sql2)
@@ -229,6 +231,7 @@ class MSearch(QWidget):
 
                 if not result1[0][0]:
                     replay = QMessageBox.warning(self, "!", "未找到该药品", QMessageBox.Yes)
+                    self.tab1.lineEdit.clear()
                     return
                 sql2 = 'select sum(数量) from 销售 where 名称="%s"' % text
                 result2 = self.db.searchall(sql2)
@@ -245,6 +248,7 @@ class MSearch(QWidget):
                 self.tab1_2.setItem(0, 1, QTableWidgetItem(name))
                 self.tab1_2.setItem(0, 2, QTableWidgetItem(str(price)))
                 self.tab1_2.setItem(0, 3, QTableWidgetItem(str(remain_count)))
+        self.tab1.lineEdit.clear()
         #进货查询
     def event_select2(self):
         #清空显示table
@@ -265,6 +269,7 @@ class MSearch(QWidget):
                 results = self.db.searchall(sql)
                 if len(results) == 0:
                     replay = QMessageBox.warning(self, "!", "未查找到!")
+                    self.tab2.lineEdit.clear()
                     return
             except Exception as e:
                 print(e)
@@ -285,6 +290,7 @@ class MSearch(QWidget):
                 self.tab2_2.setItem(i, 2, tab3_newItem3)
                 self.tab2_2.setItem(i, 3, tab3_newItem4)
                 self.tab2_2.setItem(i, 4, tab3_newItem5)
+            self.tab2.lineEdit.clear()
             return
 
         if self.tab2.cb.currentText() == "条形码":
@@ -293,6 +299,7 @@ class MSearch(QWidget):
             results = self.db.searchall(sql)
             if len(results)==0:
                 replay = QMessageBox.warning(self, "!", "未查找到!")
+                self.tab2.lineEdit.clear()
                 return
             self.tab2_2.setRowCount(len(results))
             try:
@@ -320,6 +327,7 @@ class MSearch(QWidget):
             results = self.db.searchall(sql)
             if len(results)==0:
                 replay = QMessageBox.warning(self, "!", "未查找到!")
+                self.tab2.lineEdit.clear()
                 return
             self.tab2_2.setRowCount(len(results))
             for i in range(len(results)):
@@ -337,6 +345,7 @@ class MSearch(QWidget):
                 self.tab2_2.setItem(i, 2, tab3_newItem3)
                 self.tab2_2.setItem(i, 3, tab3_newItem4)
                 self.tab2_2.setItem(i, 4, tab3_newItem5)
+        self.tab2.lineEdit.clear()
     #售货查询
     def event_select3(self):
         #清空
@@ -357,6 +366,7 @@ class MSearch(QWidget):
             results = self.db.searchall(sql)
             if len(results)==0:
                 replay = QMessageBox.warning(self, "!", "未查找到!")
+                self.tab3.lineEdit.clear()
                 return
             self.tab3_2.setRowCount(len(results))
             for i in range(len(results)):
@@ -370,6 +380,7 @@ class MSearch(QWidget):
                 self.tab3_2.setItem(i, 1, tab3_newItem2)
                 self.tab3_2.setItem(i, 3, tab3_newItem3)
                 self.tab3_2.setItem(i, 2, tab3_newItem4)
+            self.tab3.lineEdit.clear()
             return
 
         if self.tab3.cb.currentText() == "条形码":
@@ -378,6 +389,7 @@ class MSearch(QWidget):
             results = self.db.searchall(sql)
             if len(results)==0:
                 replay = QMessageBox.warning(self, "!", "未查找到!")
+                self.tab3.lineEdit.clear()
                 return
             self.tab3_2.setRowCount(len(results))
             for i in range(len(results)):
@@ -398,6 +410,7 @@ class MSearch(QWidget):
             results = self.db.searchall(sql)
             if len(results)==0:
                 replay = QMessageBox.warning(self, "!", "未查找到!")
+                self.tab3.lineEdit.clear()
                 return
             self.tab3_2.setRowCount(len(results))
             for i in range(len(results)):
@@ -411,6 +424,7 @@ class MSearch(QWidget):
                 self.tab3_2.setItem(i, 1, tab3_newItem2)
                 self.tab3_2.setItem(i, 3, tab3_newItem3)
                 self.tab3_2.setItem(i, 2, tab3_newItem4)
+        self.tab3.lineEdit.clear()
 if __name__ == "__main__":
     app = QApplication(sys.argv)
     sell = Shopselect()
